@@ -30,6 +30,7 @@
 		34E573C92C6DF53D005565C4 /* GithubUserDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34E573C82C6DF53D005565C4 /* GithubUserDetailViewController.swift */; };
 		34E573CB2C6DFC48005565C4 /* ExtensionArray.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34E573CA2C6DFC48005565C4 /* ExtensionArray.swift */; };
 		34E574642C6F4D85005565C4 /* GithubApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34E574632C6F4D85005565C4 /* GithubApi.swift */; };
+		CED3BD692C7DDAB500436569 /* UserRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED3BD682C7DDAB500436569 /* UserRepository.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -75,6 +76,7 @@
 		34E573C82C6DF53D005565C4 /* GithubUserDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GithubUserDetailViewController.swift; sourceTree = "<group>"; };
 		34E573CA2C6DFC48005565C4 /* ExtensionArray.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionArray.swift; sourceTree = "<group>"; };
 		34E574632C6F4D85005565C4 /* GithubApi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GithubApi.swift; sourceTree = "<group>"; };
+		CED3BD682C7DDAB500436569 /* UserRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserRepository.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -202,6 +204,7 @@
 			children = (
 				34E573B02C6B3FAB005565C4 /* NetworkManager.swift */,
 				34E574632C6F4D85005565C4 /* GithubApi.swift */,
+				CED3BD682C7DDAB500436569 /* UserRepository.swift */,
 			);
 			path = NetworkManager;
 			sourceTree = "<group>";
@@ -376,6 +379,7 @@
 				34E573C52C6DECD9005565C4 /* GithubUserDetailModel.swift in Sources */,
 				34E573C92C6DF53D005565C4 /* GithubUserDetailViewController.swift in Sources */,
 				34E573BD2C6C8F9D005565C4 /* UserCellProtocol.swift in Sources */,
+				CED3BD692C7DDAB500436569 /* UserRepository.swift in Sources */,
 				34E573C72C6DF394005565C4 /* GithubUserDetailViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -13,8 +13,11 @@ class UsersViewModel: ObservableObject {
     
     private var isFetching = false
     
-    init() {
-        self.fetchUsers(since: nil)
+    private let userRepository: UserRepository
+        
+    init(userRepository: UserRepository = DefaultUserRepository()) {
+        self.userRepository = userRepository
+        self.startFetching()
     }
     
     public func nextPage() {
@@ -22,22 +25,38 @@ class UsersViewModel: ObservableObject {
               let id = user.id,
               users.count < 100
         else { return }
-        self.fetchUsers(since: "\(id)")
+        Task {
+            await self.fetchUsers(since: "\(id)")
+        }
     }
     
-    private func fetchUsers(since: String?) {
+    private func startFetching() {
+        Task {
+            await fetchUsers(since: nil)
+//            This will wait for fetchUsers to complete before calling fetchXxxxxx
+//            await fetchXxxxxx
+        }
+
+        Task {
+            // This will not wait for fetchUsers to complete before calling fetchAaaaa
+            // await fetchAaaaa
+        }
+
+    }
+    
+    private func fetchUsers(since: String?) async {
         guard !isFetching else { return }
         isFetching = true
         
-        NetworkService.shared.request(api: .getUsers(since: since), model: GithubUsers.self) { [weak self] result in
-            self?.isFetching = false
-            
-            switch result {
-            case .success(let users):
-                self?.users += users
-            case .failure(let error):
-                print("Request failed with error: \(error)")
+        do {
+            let _users = try await userRepository.fetchUsers(since: since)
+            await MainActor.run {
+                users += _users
+                isFetching = false
             }
+        } catch {
+            isFetching = false
+            print("Error fetching users: \(error)")
         }
     }
 }

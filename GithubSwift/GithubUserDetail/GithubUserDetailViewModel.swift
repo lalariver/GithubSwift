@@ -16,8 +16,17 @@ class GithubUserDetailViewModel {
     @Published public var location: String?
     @Published public var blog: String?
     
-    init(login: String) {
-        self.fetchUserDetail(login: login)
+    private let userRepository: UserRepository
+    
+    init(userRepository: UserRepository = DefaultUserRepository() , login: String) {
+        self.userRepository = userRepository
+        self.startFetching(login: login)
+    }
+    
+    private func startFetching(login: String) {
+        Task {
+            await fetchUserDetail(login: login)
+        }
     }
     
     public func saveName(_ name: String?) {
@@ -36,16 +45,14 @@ class GithubUserDetailViewModel {
         self.blog = detailModel.blog
     }
     
-    private func fetchUserDetail(login: String) {
-        NetworkService.shared.request(api: .getUserDetail(login: login), model: GithubUserDetailModel.self) { [weak self] result in
-            switch result {
-            case .success(let result):
-                DispatchQueue.main.async {
-                    self?.setUserDetailData(detailModel: result)
-                }
-            case .failure(let error):
-                print("Request failed with error: \(error)")
+    private func fetchUserDetail(login: String) async {
+        do {
+            let detail = try await userRepository.fetchUserDetail(login: login)
+            await MainActor.run {
+                setUserDetailData(detailModel: detail)
             }
+        } catch {
+            print("Error fetching users: \(error)")
         }
     }
     

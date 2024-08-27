@@ -10,44 +10,51 @@ import Foundation
 class NetworkService {
     static let shared = NetworkService()
     
-    func request<T: Codable>(api: GithubApi, model: T.Type, completion: @escaping (Result<T, APIError>) -> Void) {
-        let session = URLSession.shared
-        
-        let task = session.dataTask(with: api.urlRequest) { data, response, error in
-            if let error = error {
-                completion(.failure(.networkError(error)))
-                return
+    func request<T: APIRequest>(apiRequest: T) async throws -> T.ResponseDataType {
+        do {
+            let request = try apiRequest.makeRequest()
+            print("Requesting: \(request)")
+            
+            return try await withCheckedThrowingContinuation { continuation in
+                let task = URLSession.shared.dataTask(with: request) { data, response, error in
+                    if let error = error {
+                        continuation.resume(throwing: APIError.networkError(error))
+                        return
+                    }
+                    
+                    guard let httpResponse = response as? HTTPURLResponse,
+                          (200...299).contains(httpResponse.statusCode)
+                    else {
+                        continuation.resume(throwing: APIError.statusCodeError)
+                        return
+                    }
+                    
+                    guard let data = data else {
+                        continuation.resume(throwing: APIError.dataError)
+                        return
+                    }
+                    
+                    let dateFormatter = DateFormatter()
+                    dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+                    dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+                    dateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
+                    
+                    let decoder = JSONDecoder()
+                    decoder.dateDecodingStrategy = .formatted(dateFormatter)
+                    
+                    do {
+                        let decodedModel = try decoder.decode(T.ResponseDataType.self, from: data)
+                        continuation.resume(returning: decodedModel)
+                    } catch {
+                        continuation.resume(throwing: APIError.decodingError(error))
+                    }
+                }
+                
+                task.resume()
             }
-            
-            guard let httpResponse = response as? HTTPURLResponse,
-                  (200...299).contains(httpResponse.statusCode)
-            else {
-                completion(.failure(.unknownError))
-                return
-            }
-            
-            guard let data = data else {
-                completion(.failure(.unknownError))
-                return
-            }
-            
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
-            dateFormatter.locale = Locale(identifier: "en_US_POSIX")
-            dateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
-            
-            let decoder = JSONDecoder()
-            decoder.dateDecodingStrategy = .formatted(dateFormatter)
-            
-            do {
-                let decodedModel = try decoder.decode(T.self, from: data)
-                completion(.success(decodedModel))
-            } catch {
-                completion(.failure(.decodingError(error)))
-            }
+        } catch {
+            throw error
         }
-        
-        task.resume()
     }
 }
 
@@ -56,4 +63,7 @@ enum APIError: Error {
     case serverError(Int)
     case decodingError(Error)
     case unknownError
+    case statusCodeError
+    case dataError
+    case urlError
 }
